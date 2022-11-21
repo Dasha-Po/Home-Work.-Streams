@@ -1,7 +1,7 @@
 import java.io.*;
-import java.util.Arrays;
 
-public class Basket {
+
+public class Basket implements Serializable {
     protected String[] products; // массив названий продуктов
     protected int[] prices; // массив цен
     protected int[] productNumbers; // массив с количествами продуктов
@@ -53,7 +53,6 @@ public class Basket {
             for (int i = 0; i < products.length; i++) {
                 out.printf(productNumbers[i] + "|");
             }
-
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
@@ -81,13 +80,32 @@ public class Basket {
                 price[i] = Integer.parseInt(parts[i + parts.length / 3]);
                 productNumber[i] = Integer.parseInt(parts[i + parts.length / 3 * 2]);
             }
-
             return new Basket(product, price, productNumber);
-
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
         return null;
     }
-//   геттеры, которые вы посчитаете нужными.
+
+    //    Добавьте метод saveBin(File file) для сохранения в файл в бинарном формате.
+    public void saveBin(File file) {
+        try (FileOutputStream fos = new FileOutputStream(file);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //    Добавьте метод static loadFromBinFile(File file) для загрузки корзины из бинарного файла.
+    static Basket loadFromBinFile(File file) {
+        Basket basket = null;
+        try (FileInputStream fis = new FileInputStream(file);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            basket = (Basket) ois.readObject();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return basket;
+    }
 }
