@@ -1,5 +1,11 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.*;
-import java.util.Arrays;
 
 public class Basket {
     protected String[] products; // массив названий продуктов
@@ -59,6 +65,19 @@ public class Basket {
         }
     }
 
+    // запись корзины в файл json
+    public void saveJson(File jsonFile) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+
+        try (FileWriter file = new FileWriter(jsonFile)) {
+            file.write(gson.toJson(this));
+            file.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     //   static Basket loadFromTxtFile(File textFile) - статический(!) метод восстановления объекта корзины
     //   из текстового файла, в который ранее была она сохранена;
     public static Basket loadFromTxtFile(File textFile) {
@@ -89,5 +108,34 @@ public class Basket {
         }
         return null;
     }
-//   геттеры, которые вы посчитаете нужными.
+
+    // чтение корзины из файла json
+    public static Basket loadFromJsonFile(File jsonFile) {
+        JSONParser parser = new JSONParser();
+
+        try {
+            Object obj = parser.parse(new FileReader(jsonFile));
+
+            JSONObject basketParsedJson = (JSONObject) obj;
+
+            JSONArray productsJson = (JSONArray) basketParsedJson.get("products");
+            JSONArray pricesJson = (JSONArray) basketParsedJson.get("prices");
+            JSONArray productNumbersJson = (JSONArray) basketParsedJson.get("productNumbers");
+            int size = productsJson.size();
+            String[] products = new String[size];
+            int[] prices = new int[size];
+            int[] productNumbers = new int[size];
+            for (int i = 0; i < size; i++) {
+                products[i] = (String) productsJson.get(i);
+                prices[i] = Integer.parseInt(pricesJson.get(i).toString());
+                productNumbers[i] = Integer.parseInt(productNumbersJson.get(i).toString());
+            }
+
+            return new Basket(products, prices, productNumbers);
+
+        } catch (ParseException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }

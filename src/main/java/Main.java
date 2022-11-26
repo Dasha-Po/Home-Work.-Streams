@@ -5,14 +5,16 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        File file = new File("basket.txt");
+        File file = new File("basket.json");
+        File fileLog = new File("log.csv");
+        ClientLog clientLog = new ClientLog();
         String[] products = {"Хлеб", "Яблоки", "Молоко", "Гречневая крупа"}; // массив продуктов
         int[] prices = {100, 200, 300, 150}; // массив со стоимостью
         Basket basket = new Basket(products, prices);
         // проверяем, есть ли файл с корзиной
         if (file.exists()) {
             System.out.println("Корзина загружена из файла");
-            basket = Basket.loadFromTxtFile(file);
+            basket = Basket.loadFromJsonFile(file);
             basket.printCart();
         } else {
             try {
@@ -55,9 +57,10 @@ public class Main {
             int productNumber = Integer.parseInt(parts[0]) - 1; // номер продукта в исходном массиве
             int productCount = Integer.parseInt(parts[1]); // количество продукта, которое добавим в корзину
             basket.addToCart(productNumber, productCount);
-            basket.saveTxt(file);
+            basket.saveJson(file);
+            clientLog.log(productNumber, productCount);
         }
         basket.printCart();
-
+        clientLog.exportAsCSV(fileLog);
     }
 }
